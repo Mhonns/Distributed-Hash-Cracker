@@ -1,0 +1,28 @@
+---
+- name: Test ansible yaml
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Install sudo
+      apt:
+        name: sudo
+        state: present
+        update_cache: yes
+      become: yes  # This specific task needs sudo
+      when: ansible_distribution == 'Ubuntu'
+
+  tasks:
+    - name: Create test.txt with content
+      copy:
+        content: "hello"
+        dest: /tmp/test.txt
+        mode: '0644'
+
+  tasks:
+    - name: Remove test.txt file
+      file:
+        path: /tmp/test.txt
+        state: absent
+        ]
