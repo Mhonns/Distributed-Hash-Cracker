@@ -1,0 +1,38 @@
+---
+- name: Starting all deploy tasks
+  hosts: all
+  remote_user: root
+  gather_facts: no
+  
+  tasks:
+    - name: Check if sudo is already installed
+      raw: which sudo || echo "not found"
+      register: sudo_check
+      changed_when: false
+
+    - name: Install sudo on Debian/Ubuntu
+      raw: apt-get update && apt-get install -y sudo
+      when: "'not found' in sudo_check.stdout"
+      register: sudo_install_apt
+      ignore_errors: yes
+
+    - name: Install sudo on RHEL/CentOS
+      raw: yum install -y sudo
+      when: "'not found' in sudo_check.stdout and sudo_install_apt is failed"
+      register: sudo_install_yum
+      ignore_errors: yes
+
+    - name: Verify sudo installation
+      raw: which sudo
+      register: sudo_verify
+      changed_when: false
+
+    - name: Display sudo installation status
+      debug:
+        msg: "Sudo has been successfully installed on {{ inventory_hostname }}"
+      when: sudo_verify.rc == 0
+
+    - name: Display installation failure
+      debug:
+        msg: "Failed to install sudo on {{ inventory_hostname }}"
+      when: sudo_verify.rc != 0
