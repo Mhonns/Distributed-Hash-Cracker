@@ -1,0 +1,38 @@
+---
+- name: Starting all deploy tasks
+  hosts: all
+  become: yes
+  gather_facts: no
+  
+  tasks:
+    - name: Ensure wget is installed
+      package:
+        name: wget
+        state: present
+      register: wget_install
+      ignore_errors: yes
+
+    - name: Check if client.c already exists
+      stat:
+        path: /tmp/client.c
+      register: client_file
+
+    - name: Download client.c using wget
+      command: wget http://192.168.64.211:8000/src/client.c -O /tmp/client.c
+      args:
+        creates: /tmp/client.c
+      register: wget_result
+      failed_when: wget_result.rc != 0 and not client_file.stat.exists
+      retries: 3
+      delay: 5
+      until: wget_result is not failed
+
+    - name: Display download status
+      debug:
+        msg: "Download completed successfully on {{ inventory_hostname }}"
+      when: wget_result is success
+
+    - name: Handle download failures
+      debug:
+        msg: "Failed to download on {{ inventory_hostname }}. Error: {{ wget_result.stderr }}"
+      when: wget_result is failed
