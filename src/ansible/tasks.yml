@@ -10,7 +10,7 @@
         name: sudo
         state: present
         update_cache: yes
-      become: yes  # This specific task needs sudo
+      become: yes
       when: ansible_distribution == 'Ubuntu'
 
   tasks:
@@ -25,4 +25,3 @@
       file:
         path: /tmp/test.txt
         state: absent
-        ]
