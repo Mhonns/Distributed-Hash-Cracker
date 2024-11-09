@@ -1,0 +1,65 @@
+---
+- name: Starting all deploy tasks
+  hosts: all
+  remote_user: root
+  gather_facts: no
+  
+  tasks:
+    - name: Check if sudo is already installed
+      raw: which sudo || echo "not found"
+      register: sudo_check
+      changed_when: false
+
+    - name: Install sudo on Debian/Ubuntu
+      raw: apt-get update && apt-get install -y sudo
+      when: "'not found' in sudo_check.stdout"
+      register: sudo_install_apt
+      ignore_errors: yes
+
+    - name: Install sudo on RHEL/CentOS
+      raw: yum install -y sudo
+      when: "'not found' in sudo_check.stdout and sudo_install_apt is failed"
+      register: sudo_install_yum
+      ignore_errors: yes
+
+    - name: Verify sudo installation
+      raw: which sudo
+      register: sudo_verify
+      changed_when: false
+
+    - name: Display sudo installation status
+      debug:
+        msg: "Sudo has been successfully installed on {{ inventory_hostname }}"
+      when: sudo_verify.rc == 0
+
+    - name: Check if gcc is installed
+      raw: which gcc || echo "not found"
+      register: gcc_check
+      changed_when: false
+
+    - name: Install gcc and build tools on Debian/Ubuntu
+      raw: apt-get update && apt-get install -y build-essential
+      when: "'not found' in gcc_check.stdout"
+      register: gcc_install_apt
+      ignore_errors: yes
+
+    - name: Install gcc and build tools on RHEL/CentOS
+      raw: yum group install -y "Development Tools"
+      when: "'not found' in gcc_check.stdout and gcc_install_apt is failed"
+      register: gcc_install_yum
+      ignore_errors: yes
+
+    - name: Verify gcc installation
+      raw: gcc --version
+      register: gcc_verify
+      changed_when: false
+
+    - name: Display gcc installation status
+      debug:
+        msg: "GCC has been successfully installed on {{ inventory_hostname }}"
+      when: gcc_verify.rc == 0
+
+    - name: Display gcc installation failure
+      debug:
+        msg: "Failed to install GCC on {{ inventory_hostname }}"
+      when: gcc_verify.rc != 0
