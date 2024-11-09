@@ -12,20 +12,29 @@
       register: wget_install
       ignore_errors: yes
 
-    - name: Check if client.c already exists
+    - name: Check if worker already exists
       stat:
-        path: /tmp/client.c
+        path: /tmp/worker.cpp
       register: client_file
 
-    - name: Download client.c using wget
-      command: wget http://192.168.64.211:8000/src/client.c -O /tmp/client.c
-      args:
-        creates: /tmp/client.c
+    - name: Download worker using wget
+      command: wget http://192.168.64.211:8000/src/worker.cpp -O /tmp/worker.cpp
       register: wget_result
-      failed_when: wget_result.rc != 0 and not client_file.stat.exists
+      failed_when: wget_result.rc != 0
       retries: 3
       delay: 5
       until: wget_result is not failed
+
+    - name: Compile worker
+      command: g++ -o /tmp/worker.o /tmp/worker.cpp
+      register: compile_result
+      ignore_errors: yes
+
+    - name: Run worker
+      command: /tmp/worker.o
+      register: run_result
+      when: compile_result.rc == 0
+      async: 1
 
     - name: Display download status
       debug:
