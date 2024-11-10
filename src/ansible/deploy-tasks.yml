@@ -12,13 +12,8 @@
       register: wget_install
       ignore_errors: yes
 
-    - name: Check if worker already exists
-      stat:
-        path: /tmp/worker.cpp
-      register: client_file
-
     - name: Download worker using wget
-      command: wget http://192.168.64.211:8000/src/worker.cpp -O /tmp/worker.cpp
+      command: wget http://{{ proj_ip }}:{{ file_port }}/src/worker.cpp -O /tmp/worker.cpp
       register: wget_result
       failed_when: wget_result.rc != 0
       retries: 3
@@ -31,7 +26,7 @@
       ignore_errors: yes
 
     - name: Run worker
-      command: /tmp/worker.o
+      command: /tmp/worker.o {{ hashed }} {{ proj_ip }} {{ proj_port }} {{ chunk_size}}
       register: run_result
       when: compile_result.rc == 0
       async: 1
