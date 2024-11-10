@@ -6,20 +6,17 @@ FILE_PORT=8000
 CHUNK_SIZE=456976
 
 # kill old process
-line1=$(head -n 1 tmp)
-line2=$(head -n 1 tmp)
-kill $line1
-kill $line2
+sudo fuser -k $PROJ_PORT/udp
+sudo fuser -k $FILE_PORT/tcp
 
 # Start hosting the worker script
 python3 -m http.server $FILE_PORT -d ../ &
-echo $! > tmp
 
 # Create master worker tasks
 g++ -o master.o ../src/master.cpp -pthread -std=c++11
+
 # Usages: bin port chunk_size hashed_value
 ./master.o $PROJ_PORT $CHUNK_SIZE $HASHED &
-echo $! >> tmp
 
 # Deploy a worker script
 ansible-playbook -i ../src/ansible/inventory.ini ../src/ansible/deploy-tasks.yml \
