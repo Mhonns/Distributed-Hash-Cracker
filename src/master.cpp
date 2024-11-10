@@ -8,11 +8,19 @@
 #include <map>
 #include <vector>
 #include <fcntl.h> 
+#include <fstream>
+#include <cmath>
 
-#define REG_STATE 'Z'
-#define STATUS_STATE 'B'
-#define ASSIGN_STATE 'C'
-#define FINISH_STATE 'D'
+#define STATUS_STATE 'Z'
+#define ASSIGN_STATE 'A'
+#define FOUND_STATE 'F'
+#define SUCCESS_MSG "SCMSG"
+#define FOUND_MSG "FOUND"
+#define FAIL_MSG "FLMSG"
+
+int chunk_size = 0;
+int chunk_index = 0;
+int chunk_left = 1;
 
 class UDPServer {
 private:
@@ -26,7 +34,7 @@ private:
     std::string getClientIdentifier(const struct sockaddr_in& addr) {
         char buff[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(addr.sin_addr), buff, INET_ADDRSTRLEN);
-        return std::string(buff); // + ":" + std::to_string(ntohs(addr.sin_port));
+        return std::string(buff);
     }
 
     // Handle individual client message
@@ -36,36 +44,63 @@ private:
             std::lock_guard<std::mutex> lock(clientsMutex); // Lock
             clients[clientId] = client_addr; // Store or update client information
         }
+        const char *ret_val = state_handler(buffer, clientId);
+        std::cout << "Ret val: " << ret_val << std::endl;
 
-        char state = buffer[0];
-        switch (state) {
-            case (REG_STATE): {
-                std::lock_guard<std::mutex> lock(clientsMutex);
-                std::cout << "Register state from client " << clientId << std::endl;
-                break;
-            }
-            case (STATUS_STATE): {
-                std::lock_guard<std::mutex> lock(clientsMutex);
-                std::cout << "Status state from client " << clientId << std::endl;
-                break;
-            }
-            case (ASSIGN_STATE): {
-                std::lock_guard<std::mutex> lock(clientsMutex);
-                std::cout << "Assign state from client " << clientId << std::endl;
-                break;
-            }
-            case (FINISH_STATE): {
-                std::lock_guard<std::mutex> lock(clientsMutex);
-                std::cout << "Finish state from client " << clientId << std::endl;
-                break;
-            }
+        // Ending condition
+        if (strcmp(ret_val, FOUND_MSG) == 0) {
+            std::cout << FOUND_MSG << std::endl;
+            std::cout << "Done, Password in: " << clientId << std::endl;
+            const std::string filename = "password.txt";
+            std::ofstream outFile(filename);
+            if (outFile.is_open())  {
+                outFile << clientId;
+                outFile.close();
+            } else 
+                std::cerr << "Error: Could not open file for writing." << std::endl;
+            exit(0);
+        }
+        else if (chunk_left <= 0) {
+            std::cout << "No password found" << std::endl;
+            exit(0);
         }
 
         // Send response back to specific client
-        sendto(sockfd, buffer, MSG_SIZE, 0,
+        sendto(sockfd, ret_val, MSG_SIZE, 0,
                (const struct sockaddr *)&client_addr, len);
         
         std::cout << "Response sent to client " << clientId << std::endl;
+    }
+
+    const char *state_handler(const char* buffer, std::string clientId) {
+        char state = buffer[0];
+        switch (state) {
+            case (STATUS_STATE): {
+                std::lock_guard<std::mutex> lock(clientsMutex);
+                std::cout << "\n1. Status Client: " << clientId << std::endl;
+                std::cout << "Got CPU: " << int(buffer[1]) << "cores" << std::endl;
+                std::cout << "Got RAM: " << int(buffer[2]) << "GiB" << std::endl;
+                std::cout << "Got Storage: " << int(buffer[3]) << "GiB" << std::endl;
+                std::cout << "Prepared Chunk Size: " << chunk_size << "B" << std::endl;
+                return SUCCESS_MSG;
+            }
+            case (ASSIGN_STATE): {
+                std::lock_guard<std::mutex> lock(clientsMutex);
+                uint16_t start_index = chunk_index++;
+                uint16_t end_index = chunk_index++;
+                std::cout << "\n2. Assign task: " << clientId << std::endl;
+                std::cout << "Start index: " << start_index << std::endl;
+                std::cout << "End index: " << end_index << std::endl;
+                chunk_left--;
+                return SUCCESS_MSG;
+            }
+            case (FOUND_STATE): {
+                std::lock_guard<std::mutex> lock(clientsMutex);
+                std::cout << "\n3. Finish state from client " << clientId << std::endl;
+                return FOUND_MSG;
+            }
+        }
+        return FAIL_MSG;
     }
 
 public:
@@ -149,8 +184,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     int port = atoi(argv[1]);
-    int chunk_size = atoi(argv[2]);
+    chunk_size = atoi(argv[2]);
     char *hashed_pwd = argv[3];
+
+    // Calculate all possible chunk
+    chunk_left = pow(26, 7) / chunk_size;
+    std::cout << "Chunk left: " << chunk_left << std::endl;
 
     // Connect to the network
     try {
