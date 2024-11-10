@@ -11,25 +11,27 @@
         state: present
       register: wget_install
       ignore_errors: yes
+    
+    - name: Create worker directory if it doesn't exist
+      file:
+        path: /tmp/worker
+        state: directory
+        mode: '0755'
 
     - name: Download worker using wget
-      command: wget http://{{ proj_ip }}:{{ file_port }}/src/worker.cpp -O /tmp/worker.cpp
+      command: |
+        wget --recursive --no-parent --no-host-directories --cut-dirs=2 --reject "index.html*" -P /tmp/worker \
+        http://{{ proj_ip }}:{{ file_port }}/src/worker/
       register: wget_result
-      failed_when: wget_result.rc != 0
-      retries: 3
-      delay: 5
-      until: wget_result is not failed
 
     - name: Compile worker
-      command: g++ -o /tmp/worker.o /tmp/worker.cpp
+      command: g++ -o /tmp/worker/worker.o /tmp/worker/worker.cpp /tmp/worker/get-specs.cpp 
       register: compile_result
       ignore_errors: yes
 
     - name: Run worker
-      command: /tmp/worker.o {{ hashed }} {{ proj_ip }} {{ proj_port }} {{ chunk_size}}
+      command: /tmp/worker/worker.o {{ hashed }} {{ proj_ip }} {{ proj_port }} {{ chunk_size}}
       register: run_result
-      when: compile_result.rc == 0
-      async: 1
 
     - name: Display download status
       debug:
