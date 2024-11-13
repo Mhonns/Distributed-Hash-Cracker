@@ -25,8 +25,10 @@
       register: wget_result
 
     - name: Compile worker
-      command: g++ -o /tmp/worker/worker.o /tmp/worker/worker.cpp /tmp/worker/get-specs.cpp 
-      register: compile_result
+      command: g++ -o worker.o worker.cpp get-specs.cpp sha512.cpp tasks.cpp -lcrypt
+      args:
+        chdir: /tmp/worker
+      register: compile_result 
       ignore_errors: yes
 
     - name: Run worker
