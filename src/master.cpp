@@ -21,6 +21,7 @@
 int chunk_size = 0;
 int chunk_index = 0;
 int chunk_left = 1;
+int found = false;
 
 class UDPServer {
 private:
@@ -51,13 +52,14 @@ private:
         if (strcmp(ret_val, FOUND_MSG) == 0) {
             std::cout << FOUND_MSG << std::endl;
             std::cout << "Done, Password in: " << clientId << std::endl;
-            const std::string filename = "password.txt";
+            const std::string filename = "password_in.txt";
             std::ofstream outFile(filename);
             if (outFile.is_open())  {
                 outFile << clientId;
                 outFile.close();
             } else 
                 std::cerr << "Error: Could not open file for writing." << std::endl;
+            found = true;
             exit(0);
         }
         else if (chunk_left <= 0) {
@@ -87,12 +89,17 @@ private:
             case (ASSIGN_STATE): {
                 std::lock_guard<std::mutex> lock(clientsMutex);
                 uint16_t start_index = chunk_index++;
-                uint16_t end_index = chunk_index++;
+                uint16_t end_index = chunk_index;
                 std::cout << "\n2. Assign task: " << clientId << std::endl;
                 std::cout << "Start index: " << start_index << std::endl;
                 std::cout << "End index: " << end_index << std::endl;
                 chunk_left--;
-                return SUCCESS_MSG;
+                static char ret_msg[6];  // 'A' + 2 bytes for start + 2 bytes for end + null terminator
+                ret_msg[0] = 'A';
+                memcpy(&ret_msg[1], &start_index, sizeof(uint16_t));
+                memcpy(&ret_msg[3], &end_index, sizeof(uint16_t));
+                ret_msg[5] = '\0';  // Null terminator
+                return ret_msg;
             }
             case (FOUND_STATE): {
                 std::lock_guard<std::mutex> lock(clientsMutex);
@@ -139,7 +146,7 @@ public:
         socklen_t len = sizeof(client_addr);
         std::vector<std::thread> clientThreads;
 
-        while (true) {
+        while (!found) {
             memset(buffer, 0, MSG_SIZE);
             
             ssize_t n = recvfrom(sockfd, buffer, MSG_SIZE, MSG_WAITALL,
