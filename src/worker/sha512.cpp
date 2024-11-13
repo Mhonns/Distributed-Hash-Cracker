@@ -17,15 +17,15 @@ std::string hash_password(const std::string& password, const std::string& salt) 
     return std::string(hashed_cstr);
 }
 
-int main() {
-    std::string password = "aaaaaaa";
-    std::string salt = "1UNfGmmL8v6itaPG";
+// int main() {
+//     std::string password = "aaaaaaa";
+//     std::string salt = "1UNfGmmL8v6itaPG";
 
-    // Generate hash with specified salt
-    std::string hash = hash_password(password, salt);
-    std::cout << "Hashed password: " << hash << std::endl;
+//     // Generate hash with specified salt
+//     std::string hash = hash_password(password, salt);
+//     std::cout << "Hashed password: " << hash << std::endl;
 
-    return 0;
-}
+//     return 0;
+// }
 
 // g++ sha512.cpp -o sha512 -lcrypt

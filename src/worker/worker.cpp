@@ -3,16 +3,14 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <thread>
 #include <fstream>
 #include <sys/statvfs.h>
 // Created Libs
+#include "tasks.h"
 #include "get-specs.h"
-#include "sha512.h"
 
 #define SUCCESS_MSG "SCMSG"
 #define FOUND_MSG "FOUND"
-#define FUALT_TOL 3
 
 class UDPClient {
 private:
@@ -40,14 +38,9 @@ public:
         tv.tv_sec = TIMEOUT_SECONDS;
         tv.tv_usec = 0;
 
-        // 3 retries attempts
         if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-            if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-                if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-                    throw std::runtime_error("Error setting timeout");
-                    exit(0);
-                }
-            }
+            throw std::runtime_error("Error setting timeout");
+            exit(0);
         }
     }
 
@@ -58,7 +51,7 @@ public:
         // Send message
         ssize_t sent = sendto(sockfd, msg, MSG_SIZE, 0,
                             (const struct sockaddr *)&servaddr, sizeof(servaddr));
-        
+
         if (sent < 0) {
             std::cerr << "Error sending message: " << strerror(errno) << std::endl;
             return false;
@@ -73,6 +66,7 @@ public:
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 std::cerr << "Timeout waiting for response" << std::endl;
+                exit(0);
             } else {
                 std::cerr << "Error receiving: " << strerror(errno) << std::endl;
             }
@@ -81,13 +75,17 @@ public:
 
         // Check whether the success message was sent
         if (n == MSG_SIZE) {
-            if (memcmp(buffer, SUCCESS_MSG, strlen(SUCCESS_MSG)) == 0) {
-                std::cout << "Received: SUCCESS" << std::endl;
-                return true;
-            } else {
-                std::cout << "Received: FAIL" << std::endl;
-                return false;
+            if (buffer[0] == 'A') {
+                *start_index = (uint16_t)(
+                    ((unsigned char)buffer[1]) | 
+                    ((unsigned char)buffer[2] << 8)
+                );
+                *end_index = (uint16_t)(
+                    ((unsigned char)buffer[3]) | 
+                    ((unsigned char)buffer[4] << 8)
+                );
             }
+            return true;
         } else {
             std::cout << "Received wrong message size: " << n << " bytes" << std::endl;
             return false;
@@ -99,18 +97,13 @@ public:
     }
 };
 
-bool tasks(char *salt, int start_idx, int end_idx, char *char_set) {
-    // TODO brute force run sha512 and write logs.txt if found return true
-    
-    return false;
-}
-
 int main(int argc, char *argv[]) {
+
     if (argc < 5) {
         std::cout << "Usages: bin_file hashed_value host_ip port chunk_size" << std::endl;
         return 1;
     }
-    char *hashed = argv[1];
+    char *tar_hashed = argv[1];
     char *ipv4 = argv[2];
     int port = atoi(argv[3]);
     u_long chunk_size = atol(argv[4]);
@@ -133,21 +126,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO Loop and start hashsed
-    char char_set[27] = "abcdefghijklmnopqrstuvwxyz";
+    // Loop and start hashsed
     while (found == false) {
-        sleep(5);
-        msg[0] = 'A';
         try {
+            // Request tasks 
+            msg[0] = 'A';
             client.sendAndReceive(msg, &start_index, &end_index);
-            found = tasks(hashed, start_index, end_index, char_set);
+            found = tasks(tar_hashed, start_index, end_index, chunk_size, sysconf(_SC_NPROCESSORS_ONLN));
+            start_index = 0;
+            end_index = 0;
 
             // Found the password
             if (found == true) {
-                sleep(2);
-                msg[0] = 'F';
-                std::cout << "Send out found" <<std::endl;
+                sleep(1);
+                std::cout << "Send out found:" <<std::endl;
                 try {
+                    msg[0] = 'F';
                     client.sendAndReceive(msg, &start_index, &end_index);
                 } catch (const std::exception& e) {
                     std::cerr << "Error: " << e.what() << std::endl;

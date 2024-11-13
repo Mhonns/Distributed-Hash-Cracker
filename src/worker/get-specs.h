@@ -1,6 +1,9 @@
-#ifndef GET_SPECS_H
-#define GET_SPECS_H
+#ifndef SHA512_H
+#define SHA512_H
 
-std::string hash_password(const std::string& password, const std::string& salt);
+#include <string>
+
+int getStorageInGiB(const std::string& path);
+int getTotalRAMInGiB();
 
 #endif // GET_SPECS_H
