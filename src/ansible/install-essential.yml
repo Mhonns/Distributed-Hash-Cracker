@@ -1,7 +1,8 @@
 ---
-- name: Starting all deploy tasks
+- name: Starting all install essential tasks
   hosts: all
   remote_user: root
+  become: yes
   gather_facts: no
   
   tasks:
@@ -47,6 +48,10 @@
       raw: yum group install -y "Development Tools"
       when: "'not found' in gcc_check.stdout and gcc_install_apt is failed"
       register: gcc_install_yum
+      ignore_errors: yes
+
+    - name: Install openssl library
+      raw: apt-get update && apt-get install -y libssl-dev
       ignore_errors: yes
 
     - name: Verify gcc installation
