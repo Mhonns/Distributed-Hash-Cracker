@@ -73,7 +73,3 @@ The system indicates success through the following mechanisms:
 ## Contributing
 
 Please read through our documentation in the `/docs` directory before making any contributions.
-
-## License
-
-[Add your license information here]
