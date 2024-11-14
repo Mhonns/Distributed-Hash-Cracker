@@ -1,6 +1,6 @@
 # Distributed Hash Cracker
 
-A distributed system for cracking password hashes by leveraging multiple Linux machines in a network.
+A distributed system for cracking password hashes by leveraging multiple Linux machines distributing workload on multiple cpu cores in a network.
 
 ## Objectives
 
