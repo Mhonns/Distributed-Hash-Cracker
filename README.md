@@ -14,7 +14,7 @@ The system attempts to crack a hashed value with the following constraints:
 
 Please refer to the `/docs` directory for detailed documentation about the system architecture and implementation details.
 
-## Installation and Setup
+## Installation and Setup [SERVER SIDE ONLY]
 
 ### Prerequisites
 
