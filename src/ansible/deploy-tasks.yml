@@ -25,7 +25,7 @@
       register: wget_result
 
     - name: Compile worker
-      command: g++ -o worker.o worker.cpp get-specs.cpp sha512.cpp tasks.cpp -lcrypt
+      command: g++ -o worker.o worker.cpp get-specs.cpp new-tasks.cpp -lcrypt -lpthread
       args:
         chdir: /tmp/worker
       register: compile_result 

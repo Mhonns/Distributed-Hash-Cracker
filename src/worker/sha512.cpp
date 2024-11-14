@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <crypt.h>
+#include <unistd.h>
 
 std::string hash_password(const std::string& password, const std::string& salt) {
     // Prepend "$6$" to specify SHA-512 hashing algorithm with salt
@@ -14,6 +15,8 @@ std::string hash_password(const std::string& password, const std::string& salt) 
     }
     
     // Convert the C-style string to a std::string and return
+    // std::cout << "Password: " << password << std::endl;
+    // std::cout << "Hashed: " << hashed_cstr << std::endl;
     return std::string(hashed_cstr);
 }
 

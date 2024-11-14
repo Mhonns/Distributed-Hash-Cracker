@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sys/statvfs.h>
 // Created Libs
-#include "tasks.h"
+#include "new-tasks.h"
 #include "get-specs.h"
 
 #define SUCCESS_MSG "SCMSG"
@@ -126,13 +126,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Loop and start hashsed
+    // Loop and start hashse
     while (found == false) {
         try {
             // Request tasks 
             msg[0] = 'A';
             client.sendAndReceive(msg, &start_index, &end_index);
-            found = tasks(tar_hashed, start_index, end_index, chunk_size, sysconf(_SC_NPROCESSORS_ONLN));
+            ParallelCompute runhash;
+            found = runhash.compute(tar_hashed, start_index, end_index, chunk_size, sysconf(_SC_NPROCESSORS_ONLN));
             start_index = 0;
             end_index = 0;
 
