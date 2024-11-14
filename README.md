@@ -34,6 +34,9 @@ cd /init
 2. Configure network settings:
    - Navigate to `/src/ansible/inventory.ini`
    - Update the machine configurations according to your network setup
+  
+3. Chunking and master node network settings
+   - Config it on `/bin/start.sh`
 
 ## Starting the System
 
