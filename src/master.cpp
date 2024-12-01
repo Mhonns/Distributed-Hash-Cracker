@@ -10,6 +10,9 @@
 #include <fcntl.h> 
 #include <fstream>
 #include <cmath>
+#include <chrono>
+// Created Library
+#include "worker/new-tasks.h"
 
 #define STATUS_STATE 'Z'
 #define ASSIGN_STATE 'A'
@@ -22,6 +25,8 @@ int chunk_size = 0;
 int chunk_index = 0;
 int chunk_left = 1;
 int found = false;
+
+auto start_time = std::chrono::high_resolution_clock::now();
 
 class UDPServer {
 private:
@@ -60,6 +65,11 @@ private:
             } else 
                 std::cerr << "Error: Could not open file for writing." << std::endl;
             found = true;
+
+            // Timer
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
+            std::cout << "Execution time: " << duration << " microseconds" << std::endl;
             exit(0);
         }
         else if (chunk_left <= 0) {
@@ -195,7 +205,7 @@ int main(int argc, char *argv[]) {
     char *hashed_pwd = argv[3];
 
     // Calculate all possible chunk
-    chunk_left = pow(26, 7) / chunk_size;
+    chunk_left = (pow(CHAR_SET_SIZE, LETTERS) / chunk_size) - chunk_index;
     std::cout << "Chunk left: " << chunk_left << std::endl;
 
     // Connect to the network
