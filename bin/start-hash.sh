@@ -1,11 +1,18 @@
 #!/bin/
 
+# Testcases
 # Case baaaaaa
 # HASHED='\$6\$M2pjffoHE4V/J2W0\$jzcT/b6/VIpP0UaCpIh7TVGB1eJ.8vCq5cOmQJTJp7BSXMAhzICPyJ59sL0hFtDVpFk9p.CgMWrZWHK3vOxCD0'
 # Case aaabaaa
 # HASHED='\$6\$.gK6Njlm2G17CumU\$3vB12Jo0PhuwIubHfKI8bGqjFrtghTj6eMM7uUV2F5VypgwQ3KDfGSj3ezF2cWJf5CHWNUQ4xuRrBZEY9N1g01'
 # Case aabaaaa
-HASHED='\$6\$biVMS251oM0lGF96\$eKSB95hcgjpUTpYMGeFZqrKfAAtXUGlPmqixxdUnoJ23jjSgneIl6c2a2qaEkMeuYF1/sc/cJzDyPRtCJuZgp1'
+# HASHED='\$6\$biVMS251oM0lGF96\$eKSB95hcgjpUTpYMGeFZqrKfAAtXUGlPmqixxdUnoJ23jjSgneIl6c2a2qaEkMeuYF1/sc/cJzDyPRtCJuZgp1'
+# Case aaacaaa
+HASHED='\$6\$0YZ4wZNkWZwkF9aN$YzHIgN5eoHZVEHFD/HKATmIAc7i9.vT2dySOqKnUPsiszdmqRrs7kJCDs4WuQnaAhtOqQSAy9qVgKJUZ.zXOZ1'
+
+# Case Unknown
+# HASHED='\$6\$d8YaiAkVzoZd6S5w\$O9NW7xegi9MM16il2cYDMkYXqj2/I3XgCnHkMlnlOGmUvUMneFpKQLe1zt2hCdVkbQeI8HViP77jKuU/KtBd6/'
+
 PROJ_PORT=30000
 PROJ_IP="192.168.64.211"
 FILE_PORT=8000
