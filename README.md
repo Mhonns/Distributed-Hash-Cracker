@@ -1,6 +1,6 @@
 # Distributed Hash Cracker
 
-A distributed system for cracking password hashes by leveraging multiple Linux machines in a network.
+A terminal based distributed system for cracking password hashes by leveraging multiple Linux machines in a network distributing workload on multiple cpu cores.
 
 ## Objectives
 
@@ -14,7 +14,7 @@ The system attempts to crack a hashed value with the following constraints:
 
 Please refer to the `/docs` directory for detailed documentation about the system architecture and implementation details.
 
-## Installation and Setup
+## Installation and Setup [SERVER SIDE ONLY]
 
 ### Prerequisites
 
@@ -34,6 +34,9 @@ cd /init
 2. Configure network settings:
    - Navigate to `/src/ansible/inventory.ini`
    - Update the machine configurations according to your network setup
+  
+3. Chunking and master node network settings
+   - Config it on `/bin/start.sh`
 
 ## Starting the System
 
@@ -73,7 +76,3 @@ The system indicates success through the following mechanisms:
 ## Contributing
 
 Please read through our documentation in the `/docs` directory before making any contributions.
-
-## License
-
-[Add your license information here]
