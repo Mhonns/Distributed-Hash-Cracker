@@ -1,6 +1,6 @@
 # Distributed Hash Cracker
 
-MTMM-Hasing (Multi Thread on Multi Machine Hasing program): A terminal based distributed system for cracking password hashes by leveraging multiple Linux machines in a network distributing workload on multiple cpu cores.
+Distributed Hash Cracker (Multi Thread on Multi Machine Hasing program): A terminal based distributed system for cracking password hashes by leveraging multiple Linux machines in a network distributing workload on multiple cpu cores.
 
 Notes: This project also supports automation installation using ansible playbook.
 
