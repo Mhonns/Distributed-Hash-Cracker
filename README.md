@@ -1,4 +1,4 @@
-# Distributed Hash Cracker
+# Fully Distributed Hash Cracker
 
 Distributed Hash Cracker (Multi Thread on Multi Machine Hasing program): A terminal based distributed system for cracking password hashes by leveraging multiple Linux machines in a network distributing workload on multiple cpu cores.
 
